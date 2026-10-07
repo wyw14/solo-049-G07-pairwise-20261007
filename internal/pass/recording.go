@@ -15,6 +15,18 @@ func NewRecordingState(passes *Service, manager *recorder.Manager) *RecordingSta
 	return &RecordingState{passes: passes, recorder: manager}
 }
 
+func (s *RecordingState) ActiveSegment(passID string) (Pass, recorder.Segment, error) {
+	value, found := s.passes.Get(passID)
+	if !found {
+		return Pass{}, recorder.Segment{}, fmt.Errorf("pass %s not found", passID)
+	}
+	segment, found := s.recorder.ActiveForPass(passID)
+	if !found || value.RecordingSegmentID != segment.ID {
+		return Pass{}, recorder.Segment{}, fmt.Errorf("recording is not active for pass %s", passID)
+	}
+	return value, segment, nil
+}
+
 func (s *RecordingState) TransferOwner(passID, segmentID, from, to string, expectedGeneration int64) (recorder.Segment, error) {
 	value, found := s.passes.Get(passID)
 	if !found || value.RecordingSegmentID != segmentID {

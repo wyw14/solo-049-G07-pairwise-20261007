@@ -22,7 +22,7 @@ func (c *Coordinator) List(passID string) []Session {
 }
 
 func (s Session) ValidateTransferred() error {
-	if s.TransferredAt.IsZero() || s.DestinationGeneration <= s.SourceGeneration {
+	if s.State != Transferred || s.TransferredAt.IsZero() || s.DestinationGeneration <= s.SourceGeneration {
 		return fmt.Errorf("handover ownership has not advanced")
 	}
 	return nil

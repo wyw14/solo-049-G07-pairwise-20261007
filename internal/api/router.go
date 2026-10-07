@@ -39,6 +39,8 @@ func NewRouter(runtime *Runtime) (http.Handler, error) {
 		api.Post("/passes/{passID}/finalize", runtime.finalizePass)
 		api.Post("/passes/{passID}/cancel", runtime.cancelPass)
 		api.Post("/passes/{passID}/handover", runtime.handoverPass)
+		api.Post("/passes/{passID}/handover/{sessionID}/confirm", runtime.confirmHandover)
+		api.Post("/passes/{passID}/handover/{sessionID}/abort", runtime.abortHandover)
 		api.Post("/passes/{passID}/handover/{sessionID}/cleanup", runtime.cleanupHandover)
 		api.Post("/ephemeris", runtime.importEphemeris)
 		api.Get("/clock/corrections", runtime.listClockCorrections)

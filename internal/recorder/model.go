@@ -7,6 +7,7 @@ type SegmentStatus string
 const (
 	Open     SegmentStatus = "open"
 	Draining SegmentStatus = "draining"
+	Frozen   SegmentStatus = "frozen"
 	Sealed   SegmentStatus = "sealed"
 	Aborted  SegmentStatus = "aborted"
 )
