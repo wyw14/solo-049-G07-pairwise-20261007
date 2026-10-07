@@ -21,6 +21,7 @@ func (m *Manager) Transfer(segmentID, from, to string, expectedGeneration int64)
 	}
 	current.segment.OwnerStation = to
 	current.segment.OwnerGeneration++
+	current.segment.Frozen = false
 	if err := m.flushLocked(); err != nil {
 		return Segment{}, err
 	}

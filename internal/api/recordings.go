@@ -51,8 +51,7 @@ func (r *Runtime) listPersistentEvents(writer http.ResponseWriter, request *http
 	writeJSON(writer, http.StatusOK, map[string]any{"items": values})
 }
 
-func (r *Runtime) handoverPass(writer http.ResponseWriter, request *http.Request) {
-	id := chi.URLParam(request, "passID")
+func (r *Runtime) prepareHandover(writer http.ResponseWriter, request *http.Request) {
 	var input struct {
 		Destination string `json:"destination"`
 	}
@@ -60,39 +59,57 @@ func (r *Runtime) handoverPass(writer http.ResponseWriter, request *http.Request
 		writeError(writer, err)
 		return
 	}
-	value, err := r.RequirePass(id)
+	session, err := r.Handovers.Prepare(chi.URLParam(request, "passID"), input.Destination)
 	if err != nil {
 		writeError(writer, err)
 		return
 	}
-	segment, found := r.Recorder.ActiveForPass(id)
-	if !found || value.RecordingSegmentID == "" {
-		writeError(writer, errMessage("pass has no active recording"))
-		return
+	writeJSON(writer, http.StatusCreated, session)
+}
+
+func (r *Runtime) confirmHandover(writer http.ResponseWriter, request *http.Request) {
+	var input struct {
+		Station string `json:"station"`
 	}
-	session, err := r.Handovers.Begin(id, segment.ID, value.OwnerStation, input.Destination, value.OwnerGeneration)
-	if err != nil {
+	if err := decodeJSON(request, &input); err != nil {
 		writeError(writer, err)
 		return
 	}
-	session, err = r.Handovers.Transfer(session.ID)
+	session, err := r.Handovers.Confirm(chi.URLParam(request, "sessionID"), input.Station)
 	if err != nil {
-		writeError(writer, err)
-		return
-	}
-	if err := session.ValidateTransferred(); err != nil {
 		writeError(writer, err)
 		return
 	}
 	writeJSON(writer, http.StatusOK, session)
 }
 
-func (r *Runtime) cleanupHandover(writer http.ResponseWriter, request *http.Request) {
-	if err := r.Handovers.Cleanup(chi.URLParam(request, "sessionID")); err != nil {
+func (r *Runtime) commitHandover(writer http.ResponseWriter, request *http.Request) {
+	session, err := r.Handovers.Commit(chi.URLParam(request, "sessionID"))
+	if err != nil {
 		writeError(writer, err)
 		return
 	}
-	writeJSON(writer, http.StatusOK, map[string]any{"cleaned": true})
+	writeJSON(writer, http.StatusOK, session)
+}
+
+func (r *Runtime) abortHandover(writer http.ResponseWriter, request *http.Request) {
+	var input struct {
+		Reason string `json:"reason"`
+	}
+	if err := decodeJSON(request, &input); err != nil {
+		writeError(writer, err)
+		return
+	}
+	session, err := r.Handovers.Abort(chi.URLParam(request, "sessionID"), input.Reason)
+	if err != nil {
+		writeError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusOK, session)
+}
+
+func (r *Runtime) listHandovers(writer http.ResponseWriter, request *http.Request) {
+	writeJSON(writer, http.StatusOK, map[string]any{"items": r.Handovers.List(chi.URLParam(request, "passID"))})
 }
 
 func (r *Runtime) lockReceiver(writer http.ResponseWriter, request *http.Request) {

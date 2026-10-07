@@ -25,6 +25,7 @@ type Segment struct {
 	OwnerStation    string        `json:"owner_station"`
 	OwnerGeneration int64         `json:"owner_generation"`
 	Status          SegmentStatus `json:"status"`
+	Frozen          bool          `json:"frozen"`
 	FramesWritten   int           `json:"frames_written"`
 	FramesBuffered  int           `json:"frames_buffered"`
 	StartedAt       time.Time     `json:"started_at"`

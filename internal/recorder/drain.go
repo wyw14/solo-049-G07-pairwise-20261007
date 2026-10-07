@@ -19,6 +19,10 @@ func (m *Manager) Drain(ctx context.Context, segmentID string) (int, error) {
 		m.mu.Unlock()
 		return 0, fmt.Errorf("recording segment %s cannot drain from %s", segmentID, current.segment.Status)
 	}
+	if current.segment.Frozen {
+		m.mu.Unlock()
+		return 0, fmt.Errorf("recording segment %s is frozen for handover", segmentID)
+	}
 	current.segment.Status = Draining
 	frames := append([]Frame(nil), current.buffer...)
 	m.mu.Unlock()

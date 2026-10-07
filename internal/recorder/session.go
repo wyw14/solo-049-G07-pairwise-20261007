@@ -77,6 +77,9 @@ func (m *Manager) Buffer(segmentID string, frame Frame) error {
 	if current.segment.Status != Open {
 		return fmt.Errorf("recording segment %s is not accepting frames", segmentID)
 	}
+	if current.segment.Frozen {
+		return fmt.Errorf("recording segment %s is frozen for handover", segmentID)
+	}
 	if frame.Received.IsZero() {
 		frame.Received = time.Now().UTC()
 	}

@@ -1,7 +1,5 @@
 package handover
 
-import "fmt"
-
 func (c *Coordinator) Get(sessionID string) (Session, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -19,11 +17,4 @@ func (c *Coordinator) List(passID string) []Session {
 		}
 	}
 	return values
-}
-
-func (s Session) ValidateTransferred() error {
-	if s.TransferredAt.IsZero() || s.DestinationGeneration <= s.SourceGeneration {
-		return fmt.Errorf("handover ownership has not advanced")
-	}
-	return nil
 }

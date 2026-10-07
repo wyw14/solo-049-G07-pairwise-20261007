@@ -112,7 +112,10 @@ func NewRuntime(stateRoot string) (*Runtime, error) {
 	}
 	attempts.SetSink(passes)
 	recordingState := passsvc.NewRecordingState(passes, recorderManager)
-	handovers := handover.NewCoordinator(recordingState, recorderManager, trail)
+	handovers, err := handover.NewCoordinator(paths, passes, recordingState, recorderManager, attempts, trail)
+	if err != nil {
+		return nil, err
+	}
 	stower := antenna.NewStowController(fleet, trail)
 	weatherCoordinator := weather.NewCoordinator(20, rfController, stower, passes, trail)
 	runtime := &Runtime{
